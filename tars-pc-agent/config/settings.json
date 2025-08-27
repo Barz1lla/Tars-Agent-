@@ -36,3 +36,29 @@
   }
 }
 
+{
+  "api": {
+    "port": 5000
+  },
+  "paths": {
+    "uploads": "./uploads",
+    "logs": "./logs"
+  },
+  "modules": {
+    "pietarien_archivist": {
+      "enabled": true
+    },
+    "reedsy_repair": {
+      "enabled": true
+    },
+    "chat_auto_filer": {
+      "enabled": true
+    },
+    "book_qa": {
+      "enabled": true
+    },
+    "publishing_assistant": {
+      "enabled": true
+    }
+  }
+}
