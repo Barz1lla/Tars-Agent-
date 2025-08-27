@@ -1,0 +1,38 @@
+{
+  "models": {
+    "copilot": {
+      "api": "openai",
+      "apiKey": "sk-...",
+      "model": "gpt-4o"
+    },
+    "kimi": {
+      "api": "moonshot",
+      "apiKey": "ms-...",
+      "model": "moonshot-v1-32k"
+    },
+    "local": {
+      "api": "mcp",
+      "endpoint": "http://localhost:8080",
+      "model": "llama-2-13b-chat"
+    }
+  },
+  "paths": {
+    "pietarienDirectory": "./Pietarien",
+    "chatDirectory": "./chats",
+    "booksDirectory": "./books",
+    "outputDirectory": "./output",
+    "logsDirectory": "./logs"
+  },
+  "fileExtensions": [".md", ".pdf", ".docx", ".txt", ".json"],
+  "reedsy": {
+    "editorUrl": "https://reedsy.com/write",
+    "autoFixEnabled": true,
+    "checkInterval": 5000
+  },
+  "publishing": {
+    "defaultPublishers": 10,
+    "followUpDays": 14,
+    "socialPlatforms": ["twitter", "linkedin", "facebook", "instagram"]
+  }
+}
+

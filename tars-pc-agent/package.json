@@ -1,0 +1,48 @@
+{
+  "name": "tars-pc-agent",
+  "version": "1.0.0",
+  "description": "TARS-powered PC agent for file organization and publishing automation with web interface",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "heroku-postbuild": "npm install --prefix client && npm run build --prefix client",
+    "organize-pietarien": "node src/modules/pietarien-archivist/index.js",
+    "repair-reedsy": "node src/modules/reedsy-repair-agent/index.js",
+    "file-chats": "node src/modules/chat-auto-filer/index.js",
+    "book-qa": "node src/modules/book-qa-system/index.js",
+    "publish-assist": "node src/modules/publishing-assistant/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "chokidar": "^3.5.3",
+    "commander": "^11.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "fs-extra": "^11.1.1",
+    "jsdom": "^22.1.0",
+    "mammoth": "^1.6.0",
+    "markdown-it": "^13.0.1",
+    "multer": "^2.0.0",
+    "path": "^0.12.7",
+    "pdf-parse": "^1.1.1",
+    "puppeteer": "^24.17.0",
+    "text-extract": "^2.0.2",
+    "winston": "^3.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "tars",
+    "ai",
+    "automation",
+    "publishing",
+    "file-organization"
+  ],
+  "author": "David",
+  "license": "MIT"
+}

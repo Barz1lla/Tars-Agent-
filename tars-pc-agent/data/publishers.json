@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Penguin Random House",
+    "website": "https://www.penguinrandomhouse.com/",
+    "genre": ["fiction", "non-fiction", "childrens"]
+  },
+  {
+    "name": "HarperCollins",
+    "website": "https://www.harpercollins.com/",
+    "genre": ["fiction", "non-fiction", "religious"]
+  },
+  {
+    "name": "Simon & Schuster",
+    "website": "https://www.simonandschuster.com/",
+    "genre": ["fiction", "non-fiction"]
+  }
+]
+

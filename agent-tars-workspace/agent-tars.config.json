@@ -1,0 +1,43 @@
+{
+  "model": {
+    "provider": "openrouter",
+    "id": "deepseek/deepseek-r1-0528-qwen3-8b:free",
+    "apiKey": "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"
+  },
+  "files": {
+    "root": "C:/IdeaAtlas"
+  },
+  "workspace": {
+    "name": "Idea Atlas",
+    "folders": [
+      {
+        "name": "Innovation Ideas",
+        "path": "C:/IdeaAtlas/Innovation",
+        "tags": ["innovation", "systems", "founder-grade"]
+      },
+      {
+        "name": "Pietarien Home",
+        "path": "C:/IdeaAtlas/PietarienHome",
+        "tags": ["personal", "emotional logic", "archive"]
+      },
+      {
+        "name": "Books",
+        "path": "C:/IdeaAtlas/Books",
+        "tags": ["drafts", "trilogy", "publishing"]
+      },
+      {
+        "name": "Home Screen Files",
+        "path": "C:/IdeaAtlas/HomeScreen",
+        "tags": ["quick access", "sprint-ready", "dashboard"]
+      }
+    ]
+  },
+  "agent": {
+    "name": "TARS",
+    "mode": "cli",
+    "vision": false,
+    "emotional_logic": true,
+    "deduplication": true,
+    "tagging": true
+  }
+}

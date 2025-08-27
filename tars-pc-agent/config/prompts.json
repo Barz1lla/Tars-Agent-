@@ -1,0 +1,15 @@
+{
+  "categorization": {
+    "pietarien": "Analyze this content and categorize it into one of these Pietarien ideas: Justice Acceleration, Innovation Enablement, Environmental Intelligence, Sport Equity, Education Reform. Return only the category name.",
+    "chat": "Review this AI chat transcript and provide: { \"category\": \"<2-3 word label>\", \"tags\": [\"<tag1>\", \"<tag2>\", \"<tag3>\"], \"summary\": \"<one-sentence summary>\" }."
+  },
+  "bookQA": "You are a book expert. Use the following excerpts to answer the question. Excerpts: {chunks}. Question: {query}. Answer concisely with citations.",
+  "formatting": {
+    "detectIssues": "Analyze this HTML content for formatting issues: missing bold tags, incorrect headers, and spacing problems. Return a JSON list of issues.",
+    "emotionalLogic": "Review this chapter for emotional resonance and narrative clarity. Suggest improvements while maintaining the author’s voice."
+  },
+  "publishing": {
+    "queryLetter": "Write a personalized query letter for \"{bookTitle}\" to {publisherName}. Focus on {genre} and emphasize {uniquePoints}.",
+    "socialPost": "Create a {platform} post about \"{bookTitle}\" that’s engaging and includes relevant hashtags. Keep it under {characterLimit} characters."
+  }
+}
