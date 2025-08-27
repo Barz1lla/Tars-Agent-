@@ -10,7 +10,7 @@ class ReedsyRepairAgent {
     constructor(config) {
         this.config = config;
         this.tarsClient = new TarsClient(config.models);
-        
+
         // Session State
         this.isActive = false;
         this.issuesFound = [];
@@ -50,10 +50,10 @@ class ReedsyRepairAgent {
         try {
             await this.scanDrafts();
             await browserController.initialize(this.config.reedsy.editorUrl);
-            
+
             // The loop runs in the background without blocking the start method
             this.monitoringLoop(options); 
-            
+
             // Handle graceful shutdown
             this.setupShutdownListener();
 
@@ -70,7 +70,7 @@ class ReedsyRepairAgent {
      */
     async monitoringLoop(options) {
         const checkInterval = options.interval || this.config.reedsy.checkInterval;
-        
+
         while (this.isActive) {
             try {
                 const htmlContent = await domObserver.getCurrentDOM();
@@ -85,12 +85,12 @@ class ReedsyRepairAgent {
                     htmlContent
                 );
                 const issues = JSON.parse(analysisResult.text);
-                
+
                 if (issues && issues.length > 0) {
                     logger.info(`🔍 Found ${issues.length} new issues.`);
                     this.sessionStats.issuesDetected += issues.length;
                     this.issuesFound.push(...issues.map(i => ({ ...i, timestamp: new Date().toISOString() })));
-                    
+
                     if (this.config.reedsy.autoFixEnabled) {
                         logger.info("Auto-fix is enabled. Applying fixes...");
                         const fixes = await this.applyFixes(issues);
@@ -100,7 +100,7 @@ class ReedsyRepairAgent {
                 }
 
                 await this.sleep(checkInterval);
-                
+
             } catch (error) {
                 logger.error('❌ An error occurred in the monitoring loop:', error);
                 await this.sleep(checkInterval * 2); // Wait longer on error
@@ -118,7 +118,7 @@ class ReedsyRepairAgent {
             try {
                 const fix = await formatter.createFix(issue); // Assumes formatter can generate a script
                 const result = await browserController.executeScript(fix.script);
-                
+
                 const fixRecord = {
                     issue: issue.type,
                     description: issue.description,
@@ -147,14 +147,14 @@ class ReedsyRepairAgent {
         }
         this.isActive = false;
         logger.info('🛑 Stopping monitoring session...');
-        
+
         await this.sleep(100); // Allow loop to exit cleanly
 
         const report = this.generateSessionReport();
         await this.saveReport(report);
-        
+
         await browserController.close();
-        
+
         logger.info('Session stopped and resources cleaned up.');
         return report;
     }
@@ -204,7 +204,7 @@ class ReedsyRepairAgent {
             logger.error('❌ Failed to save session report:', error);
         }
     }
-    
+
     setupShutdownListener() {
         const handleShutdown = async () => {
             logger.info('Received shutdown signal (Ctrl+C).');
@@ -221,15 +221,12 @@ class ReedsyRepairAgent {
     sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-class ReedsyRepairAgent {
-  constructor(config) {
-    this.config = config;
-  }
-
-  async repair() {
-    console.log('ReedsyRepairAgent: Repair started');
-    return { status: 'completed', message: 'Reedsy files repaired successfully' };
-  }
 }
+
+// The following class definition was a duplicate and has been removed.
+// The intention was to fix syntax errors by adding proper module.exports,
+// which implies the duplicate class definition was a mistake.
+// The original intention also implies that the first, more complete class
+// definition should be the one that is exported.
 
 module.exports = ReedsyRepairAgent;

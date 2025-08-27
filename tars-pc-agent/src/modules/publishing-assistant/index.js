@@ -11,3 +11,5 @@ class PublishingAssistant {
 }
 
 module.exports = PublishingAssistant;
+
+module.exports = PublishingAssistant;

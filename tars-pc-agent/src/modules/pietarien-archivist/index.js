@@ -11,3 +11,5 @@ class PietarienArchivist {
 }
 
 module.exports = PietarienArchivist;
+
+module.exports = PietarienArchivist;

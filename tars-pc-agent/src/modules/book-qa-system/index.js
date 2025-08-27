@@ -16,3 +16,5 @@ class BookQASystem {
 }
 
 module.exports = BookQASystem;
+
+module.exports = BookQASystem;

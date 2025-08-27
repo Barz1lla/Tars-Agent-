@@ -11,3 +11,5 @@ class ChatAutoFiler {
 }
 
 module.exports = ChatAutoFiler;
+
+module.exports = ChatAutoFiler;
