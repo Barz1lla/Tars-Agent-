@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "dev": "cd tars-pc-agent && npm run dev"
+  },
   "dependencies": {
     "child_process": "^1.0.2",
     "winston": "^3.17.0"
