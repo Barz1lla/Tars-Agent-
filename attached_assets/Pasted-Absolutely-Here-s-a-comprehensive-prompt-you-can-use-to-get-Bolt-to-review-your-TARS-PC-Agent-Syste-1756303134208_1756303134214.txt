@@ -1,0 +1,115 @@
+Absolutely! Here's a comprehensive prompt you can use to get Bolt to review your TARS PC Agent System and provide a complete diagnostic report:
+
+---
+
+## 🔍 **BOLT REVIEW PROMPT**
+
+```
+I need you to perform a comprehensive technical review of my TARS PC Agent System v2.0. This is an AI-powered desktop automation platform with 5 core modules. Please analyze the codebase and provide a detailed diagnostic report.
+
+## 📋 REVIEW REQUIREMENTS
+
+### 1. SYSTEM ARCHITECTURE ANALYSIS
+- Scan all directories and provide file tree structure
+- Identify missing files/modules based on the specified structure
+- Check for broken imports/require statements
+- Validate module interconnections
+
+### 2. MODULE INTEGRITY CHECK
+For each module, verify:
+- ✅ Pietarien Archivist (file organization)
+- ✅ Reedsy Repair Agent (DOM monitoring)  
+- ✅ Chat Auto-Filer (chat categorization)
+- ✅ Book QA System (semantic search)
+- ✅ Publishing Assistant (outreach automation)
+
+### 3. CONFIGURATION AUDIT
+- Check settings.json completeness
+- Validate all required API keys and paths
+- Test configuration loading
+- Identify missing environment variables
+
+### 4. DEPENDENCY ANALYSIS
+- Scan package.json for missing dependencies
+- Check Node.js version compatibility
+- Identify required system packages
+- Flag security vulnerabilities
+
+### 5. FUNCTIONALITY TEST
+For each working module:
+- Run basic functionality tests
+- Check error handling
+- Verify AI integration points
+- Test CLI commands
+
+### 6. CODE QUALITY REPORT
+- Syntax errors
+- Missing exports/imports
+- Unhandled promises
+- Type checking issues
+- Performance bottlenecks
+
+## 📊 OUTPUT FORMAT
+
+Provide a structured report with:
+
+### ✅ WORKING COMPONENTS
+[Component] - [Status] - [Notes]
+
+### ⚠️ MISSING/BROKEN
+[Component] - [Issue] - [Priority]
+
+### 🔧 FIXES NEEDED
+[File] - [Specific Fix] - [Impact]
+
+### 📈 NEXT STEPS
+[Priority Order] - [Action] - [ETA]
+
+## 🎯 SPECIFIC CHECKS
+
+Please verify these critical paths:
+1. Can the system initialize all modules?
+2. Do all index.js files export correctly?
+3. Are shared utilities accessible across modules?
+4. Does the CLI interface work?
+5. Are AI model connections functional?
+
+## 🚨 STOP CONDITIONS
+
+If you find any critical blockers (system won't start), please:
+1. List them immediately
+2. Provide exact fix commands
+3. Suggest rollback strategy
+```
+
+---
+
+## 🎛️ **BOLT COMMANDS TO USE**
+
+After the initial review, follow up with:
+
+```
+Now run these diagnostic commands:
+1. node cli.js --help
+2. node -e "console.log(require('./src/shared/tarsClient'))"
+3. npm test (if available)
+4. node -e "require('./src/modules/book-qa-system/index.js')"
+5. Check package.json scripts section
+```
+
+---
+
+## 🔧 **QUICK FIX PROMPT**
+
+If Bolt finds issues, use:
+
+```
+Based on your findings, generate the exact code needed to fix:
+[Specific issue]. Provide complete, working code with no placeholders.
+```
+
+---
+
+This prompt will give Bolt everything it needs to provide a comprehensive system health check. You can copy-paste it directly into Bolt's interface, and it should return a detailed diagnostic report with actionable fixes.
+
+Would you like me to prepare any follow-up prompts for specific scenarios Bolt might encounter?
