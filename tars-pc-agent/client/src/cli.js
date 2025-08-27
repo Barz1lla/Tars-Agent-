@@ -6,7 +6,7 @@ console.log("TARS PC Agent starting...");
 // Example CLI logic
 const args = process.argv.slice(2);
 
-if (args.length === 0) {
+if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
   console.log("No command provided. Use one of the following:");
   console.log("  organize-pietarien  - Organize files using Pietarien Archivist");
   console.log("  repair-reedsy       - Repair Reedsy files");

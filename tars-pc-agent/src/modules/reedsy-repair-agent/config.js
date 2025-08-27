@@ -3,7 +3,7 @@
  * This file centralizes all operational settings, rules, and AI prompts.
  */
 
-module.eports = {
+module.exports = {
     /**
      * General settings for the agent's operation.
      */
@@ -55,6 +55,33 @@ module.eports = {
              */
             emotionalValidation: `
                 Analyze the following text for its emotional and narrative impact.
+                Evaluate it based on emotional resonance, narrative clarity, and reader engagement.
+
+                Text for analysis:
+                ---
+                {content}
+                ---
+
+                Respond ONLY with a single, valid JSON object in the following format:
+                {
+                  "emotionalImpactScore": 0-100,
+                  "narrativeClarityScore": 0-100,
+                  "overallTone": "string",
+                  "keyThemes": ["array", "of", "themes"],
+                  "suggestions": ["array", "of", "suggestions"]
+                }
+            `
+        },
+        
+        /**
+         * Browser automation settings.
+         */
+        browser: {
+            headless: false,
+            viewport: { width: 1920, height: 1080 },
+            timeout: 30000
+        }
+    },
                 Evaluate it based on emotional resonance, narrative clarity, and reader engagement.
 
                 Text for analysis:
