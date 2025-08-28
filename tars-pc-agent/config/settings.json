@@ -1,64 +1,71 @@
 {
-  "models": {
-    "copilot": {
-      "api": "openai",
-      "apiKey": "sk-...",
-      "model": "gpt-4o"
-    },
-    "kimi": {
-      "api": "moonshot",
-      "apiKey": "ms-...",
-      "model": "moonshot-v1-32k"
-    },
-    "local": {
-      "api": "mcp",
-      "endpoint": "http://localhost:8080",
-      "model": "llama-2-13b-chat"
+  "providers": {
+    "primary": "deepseek",
+    "fallback": ["qwen", "openchat", "ollama"],
+    "models": {
+      "deepseek": {
+        "name": "DeepSeek R1",
+        "api": "openrouter",
+        "apiKey": "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",
+        "baseURL": "https://openrouter.ai/api/v1",
+        "model": "deepseek/deepseek-r1-0528:free",
+        "maxTokens": 4000,
+        "temperature": 0.7,
+        "costPerToken": 0.0,
+        "enabled": true
+      },
+      "qwen": {
+        "name": "Qwen 2.5",
+        "api": "openrouter",
+        "apiKey": "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",
+        "baseURL": "https://openrouter.ai/api/v1",
+        "model": "qwen/qwen-2.5-72b-instruct:free",
+        "maxTokens": 4000,
+        "temperature": 0.7,
+        "costPerToken": 0.0,
+        "enabled": true
+      },
+      "openchat": {
+        "name": "OpenChat",
+        "api": "openrouter",
+        "apiKey": "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",
+        "baseURL": "https://openrouter.ai/api/v1",
+        "model": "openchat/openchat-7b:free",
+        "maxTokens": 4000,
+        "temperature": 0.7,
+        "costPerToken": 0.0,
+        "enabled": true
+      },
+      "ollama": {
+        "name": "Local Llama",
+        "api": "ollama",
+        "apiKey": "",
+        "baseURL": "http://localhost:11434/v1",
+        "model": "llama2",
+        "maxTokens": 4000,
+        "temperature": 0.7,
+        "costPerToken": 0.0,
+        "enabled": false
+      }
     }
   },
-  "paths": {
-    "pietarienDirectory": "./Pietarien",
-    "chatDirectory": "./chats",
-    "booksDirectory": "./books",
-    "outputDirectory": "./output",
-    "logsDirectory": "./logs"
-  },
-  "fileExtensions": [".md", ".pdf", ".docx", ".txt", ".json"],
-  "reedsy": {
-    "editorUrl": "https://reedsy.com/write",
-    "autoFixEnabled": true,
-    "checkInterval": 5000
-  },
-  "publishing": {
-    "defaultPublishers": 10,
-    "followUpDays": 14,
-    "socialPlatforms": ["twitter", "linkedin", "facebook", "instagram"]
-  }
-}
-
-{
   "api": {
-    "port": 5000
+    "port": 5000,
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000
   },
   "paths": {
-    "uploads": "./uploads",
-    "logs": "./logs"
+    "pietarienDirectory": "./data/pietarien",
+    "chatDirectory": "./data/chats", 
+    "booksDirectory": "./data/books",
+    "outputDirectory": "./data/output",
+    "logsDirectory": "./logs",
+    "uploads": "./uploads"
   },
-  "modules": {
-    "pietarien_archivist": {
-      "enabled": true
-    },
-    "reedsy_repair": {
-      "enabled": true
-    },
-    "chat_auto_filer": {
-      "enabled": true
-    },
-    "book_qa": {
-      "enabled": true
-    },
-    "publishing_assistant": {
-      "enabled": true
-    }
+  "fileExtensions": [".md", ".pdf", ".docx", ".txt", ".json", ".html"],
+  "websocket": {
+    "port": 5001,
+    "enabled": true
   }
 }

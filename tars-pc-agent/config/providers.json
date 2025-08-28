@@ -1,0 +1,45 @@
+{
+  "providers": {
+    "deepseek": {
+      "name": "DeepSeek R1",
+      "api": "openrouter",
+      "baseURL": "https://openrouter.ai/api/v1",
+      "apiKey": "${DEEPSEEK_API_KEY}",
+      "model": "deepseek/deepseek-r1:free",
+      "maxTokens": 4000,
+      "temperature": 0.7,
+      "costPer1K": 0.0014
+    },
+    "openchat": {
+      "name": "OpenChat",
+      "api": "openrouter",
+      "baseURL": "https://openrouter.ai/api/v1",
+      "apiKey": "${OPENCHAT_API_KEY}",
+      "model": "openchat/openchat-7b:free",
+      "maxTokens": 4000,
+      "temperature": 0.7,
+      "costPer1K": 0.0
+    },
+    "ollama": {
+      "name": "Ollama Local",
+      "api": "ollama",
+      "baseURL": "http://localhost:11434/api",
+      "model": "llama2",
+      "maxTokens": 4000,
+      "temperature": 0.7,
+      "costPer1K": 0.0
+    },
+    "gpt4o": {
+      "name": "GPT-4o",
+      "api": "openai",
+      "baseURL": "https://api.openai.com/v1",
+      "apiKey": "${OPENAI_API_KEY}",
+      "model": "gpt-4o",
+      "maxTokens": 4000,
+      "temperature": 0.7,
+      "costPer1K": 0.03
+    }
+  },
+  "fallbackOrder": ["deepseek", "openchat", "ollama", "gpt4o"],
+  "healthCheckInterval": 30000
+}

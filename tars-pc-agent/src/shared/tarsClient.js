@@ -1,60 +1,81 @@
-
-const axios = require('axios');
+const ProviderManager = require('./providerManager');
 const logger = require('./logger');
 
 class TarsClient {
     constructor(config = {}) {
         this.config = config;
-        this.defaultModel = config.defaultModel || 'gpt-4';
-        this.apiKey = process.env.OPENAI_API_KEY || config.apiKey;
-        this.baseURL = config.baseURL || 'https://api.openai.com/v1';
-        
-        if (!this.apiKey) {
-            logger.warn('No API key configured for TARS client');
+        this.providerManager = new ProviderManager(config);
+        logger.info('TARS Client initialized with multi-provider support');
+    }
+
+    async callModel(model, prompt, content, options = {}) {
+        try {
+            const result = await this.providerManager.callWithFallback(prompt, content, {
+                ...options,
+                preferredModel: model
+            });
+            logger.info(`Model call successful via ${result.provider} (${result.responseTime}ms)`);
+            return result;
+        } catch (error) {
+            logger.error('All providers failed:', error.message);
+            return {
+                text: `Error: ${error.message}. Please check your API configuration.`,
+                usage: { total_tokens: 0 },
+                error: true,
+                provider: 'none'
+            };
         }
     }
 
-    async callModel(model, prompt, content) {
-        try {
-            logger.info(`Calling model: ${model}`);
-            
-            const response = await axios.post(
-                `${this.baseURL}/chat/completions`,
-                {
-                    model: model,
-                    messages: [
-                        { role: 'system', content: prompt },
-                        { role: 'user', content: content }
-                    ],
-                    temperature: 0.7
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${this.apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    timeout: 30000
-                }
-            );
+    async analyzeContent(content, analysisType = 'general', options = {}) {
+        const prompt = `Analyze the following content for ${analysisType} issues and provide detailed insights.`;
+        return await this.callModel('auto', prompt, content, options);
+    }
 
+    // Enhanced formatContent: uses provider if available, else stub
+    async formatContent(content, formatType = 'reedsy', options = {}) {
+        // If you want to use a provider, you can add logic here
+        // For now, use stub logic as fallback
+        try {
+            // Example: If you want to use a provider, uncomment below
+            // const prompt = `Format the following content for ${formatType} platform.`;
+            // return await this.callModel('auto', prompt, content, options);
+
+            // Stubbed formatting logic
+            const html = content
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^(.+)$/gm, '<p>$1</p>')
+                .replace(/"(.+?)"/g, '<strong>"$1"</strong>');
+            return { text: html, provider: 'stub' };
+        } catch (err) {
+            logger.error('Format error:', err);
             return {
-                text: response.data.choices[0].message.content,
-                usage: response.data.usage
+                text: `Error: ${err.message}`,
+                provider: 'none',
+                error: true
+            };
+        }
+    }
+
+    getProviderStatus() {
+        return this.providerManager.getProviderStatus();
+    }
+
+    async testConnection() {
+        try {
+            const result = await this.callModel('auto', 'System check', 'Reply with "TARS System Online"');
+            return {
+                success: !result.error,
+                message: result.text,
+                provider: result.provider
             };
         } catch (error) {
-            logger.error('TARS API call failed:', error.message);
-            
-            // Return a fallback response for development
             return {
-                text: JSON.stringify([]),
-                usage: { total_tokens: 0 }
+                success: false,
+                message: error.message,
+                provider: 'none'
             };
         }
-    }
-
-    async analyzeContent(content, analysisType = 'general') {
-        const prompt = `Analyze the following content for ${analysisType} issues and return a JSON array of findings.`;
-        return await this.callModel(this.defaultModel, prompt, content);
     }
 }
 

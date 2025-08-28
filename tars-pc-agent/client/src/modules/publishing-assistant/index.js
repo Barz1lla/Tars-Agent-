@@ -1,60 +1,63 @@
 const OutreachEngine = require('./outreachEngine');
 const SocialManager = require('./socialManager');
 const CampaignTracker = require('./campaignTracker');
-const logger = require('../../shared/logger');
+const logger = require('../../shared/logger').module('PublishingAssistant');
+const path = require('path');
 
 class PublishingAssistant {
-    constructor(config) {
+    constructor(config, tarsClient) {
         this.config = config;
-        // Use dependency injection for a clean, testable architecture.
+        this.tarsClient = tarsClient;
+        this.enabled = config.modules?.publishing_assistant?.enabled ?? false;
         this.outreachEngine = new OutreachEngine(config);
         this.socialManager = new SocialManager();
         this.campaignTracker = new CampaignTracker(config);
+        logger.info('PublishingAssistant initialized');
     }
 
-    /**
-     * Initializes the assistant and all its dependent modules.
-     */
     async initialize() {
         logger.info('🚀 Initializing Publishing Assistant...');
-        // The OutreachEngine's initialize method handles its own dependencies.
         await this.outreachEngine.initialize();
         logger.info('✅ Publishing Assistant initialized successfully.');
     }
 
     /**
-     * A high-level workflow to launch a complete, multi-faceted publishing campaign.
-     * @param {object} bookInfo - Detailed information about the book.
-     * @param {object} [options={}] - Campaign options.
-     * @param {number} [options.targetCount=5] - Number of publishers to target.
-     * @param {number} [options.socialDuration=7] - Duration of the social campaign in days.
-     * @param {boolean} [options.dryRun=false] - If true, generates content without logging.
-     * @returns {Promise<object>} A summary of the launched campaign.
+     * Outreach: Generate a professional query letter for a book.
+     * @param {object} data - { title, genre, author }
+     * @returns {Promise<object>}
      */
+    async outreach(data) {
+        if (!this.enabled) throw new Error('Publishing Assistant is disabled');
+        if (!data || !data.title || !data.genre || !data.author) throw new Error('Missing book data');
+        logger.info(`Generating query letter for "${data.title}" (${data.genre})`);
+        const query = await this.tarsClient.generateContent('query-letter', {
+            title: data.title,
+            genre: data.genre,
+            author: data.author
+        });
+        return { query: query.text, provider: query.provider };
+    }
+
     async launchFullCampaign(bookInfo, options = {}) {
         const { targetCount = 5, socialDuration = 7, dryRun = false } = options;
+        if (!this.enabled) throw new Error('Publishing Assistant is disabled');
         logger.info(`🚀 Launching full campaign for: "${bookInfo.title}"...`);
 
-        // 1. Find and validate potential publishers using the OutreachEngine.
         const targets = await this.outreachEngine.findAndValidateTargets(bookInfo.genre, targetCount);
         if (targets.length === 0) {
             throw new Error('Could not find any valid publisher targets.');
         }
         logger.info(`🎯 Found ${targets.length} validated publisher targets.`);
 
-        // 2. Start a new campaign with the CampaignTracker.
         const campaign = dryRun
             ? { id: 'dry-run-campaign' }
             : await this.campaignTracker.startCampaign(bookInfo);
-        
-        // 3. Run the publisher outreach campaign.
+
         const outreachSummary = await this.outreachEngine.runCampaign(bookInfo, targets, { dryRun });
 
-        // 4. Generate and schedule the social media campaign.
         const socialPosts = await this.socialManager.generateCampaign(bookInfo, { duration: socialDuration });
         for (const post of socialPosts) {
             if (!dryRun) {
-                // In a real app, this would log to the tracker.
                 // await this.campaignTracker.logSocialPost(campaign.id, post);
             }
         }
@@ -73,19 +76,10 @@ class PublishingAssistant {
         };
     }
 
-    /**
-     * Retrieves the status and report for a specific campaign from the tracker.
-     * @param {string} campaignId - The ID of the campaign to get.
-     * @returns {Promise<object|null>} The campaign report.
-     */
     async getCampaignReport(campaignId) {
         return this.campaignTracker.generateReport(campaignId);
     }
 
-    /**
-     * Lists all campaigns currently managed by the tracker.
-     * @returns {Array<object>} A list of campaign summary objects.
-     */
     listCampaigns() {
         return Array.from(this.campaignTracker.campaigns.values()).map(c => ({
             id: c.id,

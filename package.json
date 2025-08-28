@@ -1,9 +1,16 @@
 {
+  "name": "tars-pc-agent",
+  "version": "1.0.0",
   "scripts": {
-    "dev": "cd tars-pc-agent && npm run dev"
+    "dev": "cd tars-pc-agent && npm run dev",
+    "start": "node src/cli/index.js",
+    "dev:electron": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "node src/cli/index.js",
+    "dev:frontend": "electron src/main/electron-main.js"
   },
   "dependencies": {
     "@agent-tars/cli": "^0.0.0",
+    "@agent-tars/interface": "^0.2.10",
     "child_process": "^1.0.2",
     "glob": "^11.0.3",
     "got": "^14.4.7",

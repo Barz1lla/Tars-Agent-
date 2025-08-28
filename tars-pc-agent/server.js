@@ -1,170 +1,248 @@
-require("dotenv").config(); // Load environment variables from .env file
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-const fs = require("fs-extra");
-const multer = require("multer");
-// const rateLimit = require("express-rate-limit"); // Commented out - install if needed
-const PietarienArchivist = require("./src/modules/pietarien-archivist");
-const ReedsyRepairAgent = require("./src/modules/reedsy-repair-agent");
-const ChatAutoFiler = require("./src/modules/chat-auto-filer");
-const BookQASystem = require("./src/modules/book-qa-system");
-const PublishingAssistant = require("./src/modules/publishing-assistant");
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const fs = require('fs-extra');
+const http = require('http');
+const compression = require('compression');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { Server } = require('socket.io');
+const multer = require('multer');
+const logger = require('./src/shared/logger');
+const TarsClient = require('./src/shared/tarsClient');
 
+// Load configuration
+const config = require('./config/settings.json');
+if (!config) {
+    logger.error('Missing config/settings.json');
+    process.exit(1);
+}
+
+// Initialize TARS client
+const tarsClient = new TarsClient(config);
+
+// Express app and HTTP server
 const app = express();
-const PORT = process.env.PORT || 5000; // Use environment variable or default to 5000
+const server = http.createServer(app);
+
+// Socket.IO for real-time events
+const io = new Server(server, {
+    cors: { origin: '*', methods: ['GET', 'POST'] }
+});
 
 // Middleware
+app.use(helmet());
+app.use(compression());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rate Limiting - commented out until express-rate-limit is installed
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 100, // Limit each IP to 100 requests per window
-// });
-// app.use(limiter);
+// Rate limiting
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests, please try again later.'
+});
+app.use(limiter);
 
-// Request Logging
+// Request logging
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
+    logger.info(`[${req.method}] ${req.url}`);
+    next();
 });
 
-// Serve static files (React build and uploads directory)
-app.use(express.static(path.join(__dirname, "client/build")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Static files
+app.use(express.static(path.join(__dirname, 'client/build')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// File upload configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, "uploads");
-    fs.ensureDirSync(uploadPath); // Ensure the directory exists
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${file.originalname}`;
-    cb(null, uniqueName);
-  },
-});
-const upload = multer({ storage });
+// File upload
+const upload = multer({ dest: 'uploads/', limits: { fileSize: 10 * 1024 * 1024 } });
 
-// API Routes
-
-// Health Check Route
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "healthy",
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-  });
+// API Documentation placeholder
+app.get('/api/docs', (req, res) => {
+    res.send('API documentation coming soon...');
 });
 
-// File management routes
-app.get("/api/files", async (req, res, next) => {
-  try {
-    const files = await fs.readdir(path.join(__dirname, "uploads"));
-    res.json({ files });
-  } catch (error) {
-    next(error);
-  }
+// Health check
+app.get('/api/health', async (req, res) => {
+    try {
+        const providerStatus = tarsClient.getProviderStatus();
+        res.json({
+            status: 'healthy',
+            uptime: process.uptime(),
+            providers: providerStatus,
+            socket: { connected_clients: io.engine.clientsCount },
+            timestamp: Date.now()
+        });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
 });
 
-// Pietarien Archivist routes
-app.post("/api/organize", async (req, res, next) => {
-  try {
-    const config = require("./config/settings.json");
-    const archivist = new PietarienArchivist(config);
-    const result = await archivist.organizePietarien();
-    res.json({ success: true, result });
-  } catch (error) {
-    next(error);
-  }
+// Providers
+app.get('/api/providers', (req, res) => {
+    try {
+        res.json(tarsClient.getProviderStatus());
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Reedsy Repair routes
-app.post("/api/repair-reedsy", async (req, res, next) => {
-  try {
-    const config = require("./config/settings.json");
-    const repairAgent = new ReedsyRepairAgent(config);
-    const result = await repairAgent.repair();
-    res.json({ success: true, result });
-  } catch (error) {
-    next(error);
-  }
+// Analyze
+app.post('/api/analyze', async (req, res) => {
+    const { content, type = 'general' } = req.body;
+    if (!content || typeof content !== 'string') {
+        return res.status(400).json({ error: 'Content is required and must be a string.' });
+    }
+    try {
+        const result = await tarsClient.analyzeContent(content, type);
+        io.emit('analysis_complete', { ...result, contentPreview: content.substring(0, 100) + '...', type });
+        res.json(result);
+    } catch (error) {
+        logger.error('Analysis error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Chat Auto-Filer routes
-app.post("/api/file-chats", async (req, res, next) => {
-  try {
-    const config = require("./config/settings.json");
-    const chatFiler = new ChatAutoFiler(config);
-    const result = await chatFiler.file(req.body);
-    res.json({ success: true, result });
-  } catch (error) {
-    next(error);
-  }
+// Format
+app.post('/api/format', async (req, res) => {
+    const { content, formatType = 'reedsy' } = req.body;
+    if (!content || typeof content !== 'string') {
+        return res.status(400).json({ error: 'Content is required and must be a string.' });
+    }
+    try {
+        const result = await tarsClient.formatContent(content, formatType);
+        io.emit('format_complete', { ...result, formatType, timestamp: Date.now() });
+        res.json(result);
+    } catch (error) {
+        logger.error('Format error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Book QA routes
-app.post("/api/book/ingest", upload.single("file"), async (req, res, next) => {
-  try {
-    const config = require("./config/settings.json");
-    const bookQA = new BookQASystem(config);
-    const result = await bookQA.ingest(req.file);
-    res.json({ success: true, result });
-  } catch (error) {
-    next(error);
-  }
+// Generate
+app.post('/api/generate', async (req, res) => {
+    const { type, context } = req.body;
+    if (!type || !context) {
+        return res.status(400).json({ error: 'Type and context are required.' });
+    }
+    try {
+        const result = await tarsClient.generateContent(type, context);
+        io.emit('generate_complete', { ...result, type, context: context.title || 'Generated content' });
+        res.json(result);
+    } catch (error) {
+        logger.error('Generate error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-app.post("/api/book/ask", async (req, res, next) => {
-  try {
-    const config = require("./config/settings.json");
-    const bookQA = new BookQASystem(config);
-    const result = await bookQA.ask(req.body);
-    res.json({ success: true, result });
-  } catch (error) {
-    next(error);
-  }
+// Test connection
+app.post('/api/test-connection', async (req, res) => {
+    try {
+        const result = await tarsClient.testConnection();
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Publishing Assistant routes
-app.post("/api/publish/outreach", async (req, res, next) => {
-  try {
-    const config = require("./config/settings.json");
-    const assistant = new PublishingAssistant(config);
-    const result = await assistant.outreach(req.body);
-    res.json({ success: true, result });
-  } catch (error) {
-    next(error);
-  }
+// File upload
+app.post('/api/upload', upload.single('file'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+    try {
+        const fileContent = await fs.readFile(req.file.path, 'utf8');
+        const result = await tarsClient.analyzeContent(fileContent, 'document');
+        await fs.unlink(req.file.path);
+        io.emit('upload_complete', { filename: req.file.originalname, analysis: result });
+        res.json({ filename: req.file.originalname, size: req.file.size, analysis: result });
+    } catch (error) {
+        logger.error('Upload error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Status endpoint
-app.get("/api/status", (req, res) => {
-  res.json({ status: "Server is running", port: PORT });
+// Side panel UI
+app.get('/side-panel', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build/index.html'));
 });
 
-// Catch-all handler for React app
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client/build", "index.html"));
+// Catch-all for React app
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build/index.html'));
 });
 
-// Centralized error handling middleware
+// Socket.IO events
+io.on('connection', (socket) => {
+    logger.info(`Socket.IO client connected: ${socket.id}`);
+    socket.emit('welcome', {
+        message: 'Connected to TARS Socket.IO server',
+        timestamp: Date.now(),
+        clientId: socket.id,
+        providers: tarsClient.getProviderStatus()
+    });
+
+    socket.on('get_provider_status', () => {
+        socket.emit('provider_status', tarsClient.getProviderStatus());
+    });
+
+    socket.on('analyze_content', async (data) => {
+        try {
+            const result = await tarsClient.analyzeContent(data.content, data.analysisType || 'general');
+            socket.emit('analysis_complete', result);
+            socket.broadcast.emit('analysis_broadcast', {
+                ...result,
+                contentPreview: data.content.substring(0, 100) + '...',
+                timestamp: Date.now(),
+                clientId: socket.id
+            });
+        } catch (error) {
+            socket.emit('error', { message: error.message });
+        }
+    });
+
+    socket.on('disconnect', () => {
+        logger.info(`Socket.IO client disconnected: ${socket.id}`);
+    });
+});
+
+// Error handling
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: err.message });
-});
-
-// Start the server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://0.0.0.0:${PORT}`);
+    logger.error('Server error:', err);
+    res.status(500).json({
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    });
 });
 
 // Graceful shutdown
-process.on("SIGINT", () => {
-  console.log("Shutting down server...");
-  process.exit();
+process.on('SIGTERM', () => {
+    logger.info('Received SIGTERM, shutting down gracefully');
+    server.close(() => {
+        logger.info('Server closed');
+        process.exit(0);
+    });
 });
+
+// Startup provider self-test
+(async () => {
+    try {
+        const testResult = await tarsClient.testConnection();
+        logger.info('Provider self-test result:', testResult);
+    } catch (err) {
+        logger.error('Provider self-test failed:', err);
+    }
+})();
+
+// Start server
+const PORT = config.api?.port || process.env.PORT || 5000;
+server.listen(PORT, () => {
+    logger.info(`🚀 TARS Server running on port ${PORT}`);
+    logger.info(`📡 Socket.IO endpoint: http://localhost:${PORT}/socket.io`);
+    logger.info(`📊 Health check: http://localhost:${PORT}/api/health`);
+    logger.info(`🖥️  Side panel: http://localhost:${PORT}/side-panel`);
+});
+
+module.exports = { app, server, io, tarsClient };
