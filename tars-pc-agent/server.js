@@ -89,20 +89,20 @@ app.get('/api/providers', (req, res) => {
     }
 });
 
-// Analyze
-app.post('/api/analyze', async (req, res) => {
-    const { content, type = 'general' } = req.body;
-    if (!content || typeof content !== 'string') {
-        return res.status(400).json({ error: 'Content is required and must be a string.' });
-    }
-    try {
-        const result = await tarsClient.analyzeContent(content, type);
-        io.emit('analysis_complete', { ...result, contentPreview: content.substring(0, 100) + '...', type });
-        res.json(result);
-    } catch (error) {
-        logger.error('Analysis error:', error);
-        res.status(500).json({ error: error.message });
-    }
+// Reedsy-specific formatter (NO tarsClient call)
+app.post('/api/format', async (req, res) => {
+  const { content, formatType = 'reedsy' } = req.body;
+  if (!content || typeof content !== 'string') {
+    return res.status(400).json({ error: 'Content is required and must be a string.' });
+  }
+
+  // super-simple stub formatter
+  let html = content
+    .replace(/\n\n/g, '</p>\n<p>')
+    .replace(/^(.+)$/gm, '<p>$1</p>')
+    .replace(/"(.+?)"/g, '<strong>"$1"</strong>');
+
+  res.json({ success: true, result: html, provider: 'stub' });
 });
 
 // Format
