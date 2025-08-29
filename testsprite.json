@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run build",
+  "testCommand": "npm test",
+  "include": ["src/**/*"],
+  "exclude": ["**/node_modules/**"],
+  "executionArguments": {}     // <-- NEW
+}
